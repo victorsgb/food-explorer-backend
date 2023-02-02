@@ -1,0 +1,37 @@
+{
+  "name": "food-explorer-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "knexfile.ts",
+  "scripts": {
+    "dev": "npx nodemon src",
+    "migrate": "knex migrate:latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victorsgb/food-explorer-backend.git"
+  },
+  "keywords": [],
+  "author": "Victor S G Baptista",
+  "license": "ISC",
+  "homepage": "https://github.com/victorsgb/food-explorer-backend#readme",
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.16",
+    "@types/node": "^18.11.18",
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.0",
+    "knex": "^2.4.2",
+    "pm2": "^5.2.2",
+    "sqlite3": "^5.1.4"
+  }
+}
