@@ -1,4 +1,4 @@
-export class AppError {
+class AppError {
   message;
   statusCode;
 
@@ -7,3 +7,5 @@ export class AppError {
     this.statusCode = statusCode
   }
 }
+
+export default AppError;

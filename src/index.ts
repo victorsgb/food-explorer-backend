@@ -3,14 +3,14 @@ require('express-async-errors');
 require('dotenv/config');
 import cors from 'cors';
 import express from 'express';
-// import { routes } from '../src/routes';
-import { AppError } from '../src/utils/AppError';
+import routes from '../src/routes';
+import AppError from '../src/utils/AppError';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// app.use(routes);
+app.use(routes);
 
 app.use((error: any, request : any, response: any, next: any) => {
 
