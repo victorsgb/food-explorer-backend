@@ -27,18 +27,26 @@ ingredients
 -> dish_id: number (foreign key)
 -> ingredient: string
 
-* when creating a dish, server will first create its category, if a new one, then will create the new dish and, finally, will create its ingredients, if they do not exist yet.
+* we'll assume there's only three categories and that there's no need to create a fourth one, for instance
+* when creating a dish, server will first check its category, if it exists, then will create the new dish and, finally, will create its ingredients.
 
 * planned routes:
--> create new user
--> create new session
--> update user
--> delete user
+-> create new session OK
+-> create new user OK
+-> update user OK
+-> fetch user OK
+
+-> index categories
+
+-> index ingredients
+
 -> create new dish
 -> edit dish
+-> fetch dish
+-> index dishes
 -> delete dish
 
-* authentication via JWT token
+* authentication via JWT token OK
 * allow searching by dish name, category or ingredients
 * use animations
 * backend and frontend repos must have links to deploys, previews, and instructions for project execution

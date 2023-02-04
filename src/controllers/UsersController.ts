@@ -1,7 +1,9 @@
 // Core dependencies
 import knex from '../database/knex';
-import AppError from '../utils/AppError';
 import { hash, compare } from 'bcryptjs';
+
+//Custom utils
+import AppError from '../utils/AppError';
 
 const bcryptSalt = process.env.BCRYPT_SALT;
 
@@ -46,7 +48,7 @@ class UsersController {
     /* Method for update of some data of a given user, assuming he/she is is authenticated. Data to be updated is name, email and/or password. Email must be unique and password is only updated if user provided its current password. */
     
     // Assuming user is authenticated means that request.user.id exists...
-    const id = request.user.id;
+    const id = request.user?.id;
 
     if (!id) {
       throw new AppError('Usuário(a) não autenticado(a) corretamente!', 401);

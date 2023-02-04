@@ -1,6 +1,10 @@
 // Core dependencies
 import { Router } from 'express';
-import UsersController from '../controllers/UsersControllers';
+
+// Custom controllers
+import UsersController from '../controllers/UsersController';
+
+// Custom middlewares
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const usersController = new UsersController();
