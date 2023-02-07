@@ -36,14 +36,10 @@ ingredients
 -> update user OK
 -> fetch user OK
 
--> index categories
-
--> index ingredients
-
--> create new dish
--> edit dish
+-> create new dish OK
+-> edit dish OK
 -> fetch dish
--> index dishes
+-> index dishes OK
 -> delete dish
 
 * authentication via JWT token OK

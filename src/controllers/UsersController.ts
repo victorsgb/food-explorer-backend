@@ -7,6 +7,14 @@ import AppError from '../utils/AppError';
 
 const bcryptSalt = process.env.BCRYPT_SALT;
 
+interface UserProps {
+  admin: boolean;
+  name: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+}
+
 class UsersController {
   async create(request: any, response: any) {
     /* Method for creating a new user, i.e, inserting data into table 'users'. Data to be sent is name, email, and password, retrieved from request.body. Email must be unique but there is no password restriction on backend */
@@ -120,7 +128,7 @@ class UsersController {
     const { id } = request.params;
 
     // Notice we're omitting user's password to be retrieved, for security measures 
-    const validUser = await knex('users')
+    const validUser: UserProps = await knex('users')
       .select([
         'admin',
         'name',

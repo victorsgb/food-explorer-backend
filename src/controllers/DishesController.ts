@@ -6,6 +6,23 @@ import AppError from '../utils/AppError';
 import Helpers from '../utils/Helpers';
 import DiskStorage from '../providers/DiskStorage';
 
+interface CategoryProps {
+  id: number | undefined;
+  category: string | undefined;
+}
+
+interface DishProps {
+  id: number;
+  category_id: number;
+  dish: string;
+  description: string;
+  image: string;
+  reais: number;
+  cents: number;
+  created_at: string;
+  updated_at: string;
+}
+
 class DishesController {
 
   async create(request: any, response: any) {
@@ -15,13 +32,23 @@ class DishesController {
     
     Besides, each dish has many ingredients, with its corresponding data coming as an array of strings. Each item is inserted into the 'ingredients' table, referencing the newly created dish by its id.
     
-    User must be authenticated, for security, which means request.user exists. 
+    User must be an authenticated admin, for security, which means request.user exists and this user's entry exists in the 'users' table as well. 
     
     A middleware exists to ensure that, before this method is called, the image sent by the client has been uploaded into the tmp folder. So, this method also transfers this image into the uploads folder, if everything is O.K. */
 
     // Ensure user authentication
     if (!request.user) {
       throw new AppError('Usuário(a) deve estar autenticado(a) para cadastrar pratos!', 401);
+    }
+
+    // Check if user is admin
+    const userIsAdmin = await knex('users')
+      .where({ id: request.user.id })
+      .first()
+      .then(user => user.admin) as boolean;
+
+    if (!userIsAdmin) {
+      throw new AppError('Usuário(a) precisa ter privilégios de administrador para cadastrar um novo prato!', 401);
     }
 
     // Get category from query params
@@ -112,7 +139,7 @@ class DishesController {
     
     If the client provides a category string, it must be validated in order to return the corresponding category_id.
     
-    If the client provides ingredients, then all existing ingredients must be wiped away, so that the new ingredients are inserted into the appropriate table.
+    If the client provides ingredients, then all existing ingredients that are not present in the new ingredients array must be wiped away, while only ingredients that are new must be inserted into the appropriate table.
 
     User must be authenticated, for security, which means request.user exists. 
     
@@ -127,7 +154,7 @@ class DishesController {
     const { id } = request.params;
     
     // Check if dish exists
-    const isValidDish = await knex('dishes')
+    const isValidDish: DishProps | undefined = await knex('dishes')
       .where({ id })
       .first();
 
@@ -140,12 +167,12 @@ class DishesController {
       category
     } = request.query;
 
-    let isValidCategory = {id: undefined};
-    // If category was provided, check if corresponding entry exists. Otherwise, keep isValidCategory as it is, so that it doesn't override existing category data when updating dish entry
+    let isValidCategory: CategoryProps = {id: undefined, category: undefined};
+    // If category was provided, check if corresponding entry exists. Otherwise, keep isValidCategory as undefined, so that it doesn't override existing category data when updating dish entry
     if (category) {
       isValidCategory = await knex('categories')
         .where({ category })
-        .first();
+        .first() as CategoryProps;
 
       if (!isValidCategory) {
         throw new AppError('Categoria inválida! Processo abortado.', 401);
@@ -153,7 +180,7 @@ class DishesController {
     }
 
     // Now we can retrieve the image sent by the client, if provided. It must be on the tmp folder if middleware succeeded and will be transferred to the uploads folder, where it will be available for the client.
-    const image = request.file?.filename;
+    const image: string = request.file?.filename;
 
     // Now we can get everything else from the query params as well
     const {
@@ -193,21 +220,34 @@ class DishesController {
         updated_at: knex.fn.now()
     });
 
-    // And also wipe away this dish's existing ingredients, to insert the new ones, if there are the client provided ingredients:
+    // And also update this dish's ingredients:
     if (ingredients_pars) {
-      await knex('ingredients')
-        .where({ dish_id: id })
-        .delete();
-    }
 
-    // Besides, also insert each ingredient as a new entry in the 'ingredients' table:
-    if (ingredients_pars) {
+      // Check if there are ingredients to be deleted, i.e. those that are not present in the new ingredients array:
+      let ingredientsToBeDeletedIds = await knex('ingredients')
+        .where({ dish_id: id })
+        .then(items => items.filter(item => !ingredients_pars.includes(item.ingredient)).map(item => item.id)) as number[];
+
+      let ok = await knex('ingredients')
+        .where({ dish_id: id })
+        .whereIn('id', [ingredientsToBeDeletedIds])
+        .delete();
+
+      return response.json(ok)
+
+      // Besides, insert the new ingredients, i.e. those that are not currently present in the 'ingredients' table. To do so, first index the ingredients to be skipped, i.e. those that are the existing ingredients:
+      let ingredientsToBeSkipped = await knex('ingredients')
+        .where({ dish_id : id })
+        .then(items => items.filter(item => ingredients_pars.includes(item.ingredient)).map(item => item.ingredient)) as string[];
+
       for (let ingredient of ingredients_pars) {
-        await knex('ingredients')
-          .insert({
-            dish_id: id,
-            ingredient
-        });
+        if (!ingredientsToBeSkipped.includes(ingredient)) {
+          await knex('ingredients')
+            .insert({
+              dish_id: id,
+              ingredient
+            });
+        }
       }
     }
 
@@ -222,6 +262,94 @@ class DishesController {
     }
     
     return response.json();
+  }
+
+  async index(request: any, response: any) {
+    /* Method for indexing dishes and/or ingredients. It expects a text string and returns an array of dishes entries, which matches the expected text string by dish name or by ingredient. 
+    
+    User must be authenticated to do so, for safety reasons.*/
+    // Ensure user authentication
+    if (!request.user) {
+      throw new AppError('Usuário(a) deve estar autenticado(a) para indexar pratos!', 401);
+    }
+
+    // Retrieve text string from the body of the request
+    const { text } = request.body;
+
+    // Search for dishes that matches the given text string
+    let dishes = await knex('dishes')
+      .whereLike('dish', `%${text}%`) as DishProps[];
+
+    // If none is found, look out for ingredients that match the given string,
+    // then return all dishes ids that matches the given ingredient, if any
+    if (dishes.length === 0) {
+      const dishesIds = await knex('ingredients')
+        .whereLike('ingredient', `%${text}%`)
+        .then(ingredients => ingredients.map(
+          ingredient => ingredient?.dish_id
+        )) as number[];
+      
+      if (dishesIds.length > 0) {
+        dishes = await knex('dishes')
+          .whereIn('id', [dishesIds]) as DishProps[];
+      }
+    }
+
+    return response.json(dishes);  
+  }
+
+  async show(request: any, response: any) {
+    /* Method for displaying data from dish of a given id.
+    
+    User must be authenticated for safety reasons.*/
+   
+    // Ensure user authentication
+    if (!request.user) {
+      throw new AppError('Usuário(a) deve estar autenticado(a) para exibir dados de algum prato!', 401);
+    }
+
+    // Retrieve id from route params
+    const { id } = request.params;
+
+    const dish = await knex('dishes')
+      .where({ id })
+      .first() as DishProps;
+
+    return response.json(dish);
+
+  }
+
+  async delete(request: any, response: any) {
+    /* Method for deleting dish entry of a given id from the 'dishes' table.
+    
+    User must be an authenticated admin for safety reasons.*/
+   
+    // Ensure user authentication
+    if (!request.user) {
+      throw new AppError('Usuário(a) deve estar autenticado(a) para deletar algum prato!', 401);
+    }
+
+    // Check if user is admin
+    const userIsAdmin = await knex('users')
+      .where({ id: request.user.id })
+      .first()
+      .then(user => user.admin) as boolean;
+
+    if (!userIsAdmin) {
+      throw new AppError('Usuário(a) precisa ter privilégios de administrador para deletar algum prato!', 401);
+    }
+
+    // Retrieve id from route params
+    const { id } = request.params;
+
+    console.log({ id })
+
+    await knex('dishes')
+      .where({ id })
+      .delete();
+
+    return response.json();
+
   }
 }
 

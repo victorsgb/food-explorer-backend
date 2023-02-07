@@ -18,5 +18,11 @@ const dishesRoutes = Router();
 dishesRoutes.post('/', ensureAuthenticated, upload.single('image'), dishesController.create);
 // Route to update dish
 dishesRoutes.put('/:id', ensureAuthenticated, upload.single('image'), dishesController.update);
+// Route to index dishes
+dishesRoutes.get('/', ensureAuthenticated, dishesController.index);
+// Route to show data from a given dish
+dishesRoutes.get('/:id', ensureAuthenticated, dishesController.show);
+// Route to delete dish
+dishesRoutes.delete('/:id', ensureAuthenticated, dishesController.delete);
 
 export default dishesRoutes;
