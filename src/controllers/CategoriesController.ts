@@ -7,6 +7,13 @@ import { parse } from 'csv-parse';
 // Custom utils
 import AppError from '../utils/AppError';
 
+export interface CategoryProps {
+  id: number | undefined;
+  category: string | undefined;
+  created_at?: string;
+  updated_at?: string;
+}
+
 class CategoriesController {
   async create_from_csv(request: any, response: any) {
     /* Method meant for inserting several entries into the 'categories' table at once. It expects a file called categories.csv, which must be a single column of data. First row, i.e, the title, is skipped from reading. */
@@ -47,6 +54,22 @@ class CategoriesController {
     });
 
     return response.json();
+  }
+
+  async index(request: any, response: any) {
+    /* Method for indexing all categories at once.
+    
+    User must be authenticated for safety reasons.*/
+
+    // Ensure user authentication
+    if (!request.user) {
+      throw new AppError('Usuário(a) deve estar autenticado(a) para indexar pratos!', 401);
+    }
+
+    const categories = await knex('categories') as CategoryProps[];
+
+    return response.json(categories);
+    
   }
 }
 

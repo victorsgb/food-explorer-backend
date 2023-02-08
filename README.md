@@ -34,15 +34,19 @@ ingredients
 -> create new session OK
 -> create new user OK
 -> update user OK
--> fetch user OK
+-> show user OK
 
 -> create new dish OK
 -> edit dish OK
--> fetch dish
--> index dishes OK
--> delete dish
+-> show dish OK
+-> index dishes by search text OK
+-> index dishes by category OK
+-> delete dish OK
+
+-> index categories OK
+-> index ingredients from a given dish OK
 
 * authentication via JWT token OK
-* allow searching by dish name, category or ingredients
+* allow searching by dish name, category or ingredients OK
 * use animations
 * backend and frontend repos must have links to deploys, previews, and instructions for project execution

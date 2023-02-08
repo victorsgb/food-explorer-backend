@@ -6,10 +6,8 @@ import AppError from '../utils/AppError';
 import Helpers from '../utils/Helpers';
 import DiskStorage from '../providers/DiskStorage';
 
-interface CategoryProps {
-  id: number | undefined;
-  category: string | undefined;
-}
+// Type imports
+import { CategoryProps } from './CategoriesController';
 
 interface DishProps {
   id: number;
@@ -228,12 +226,9 @@ class DishesController {
         .where({ dish_id: id })
         .then(items => items.filter(item => !ingredients_pars.includes(item.ingredient)).map(item => item.id)) as number[];
 
-      let ok = await knex('ingredients')
-        .where({ dish_id: id })
-        .whereIn('id', [ingredientsToBeDeletedIds])
+      await knex('ingredients')
+        .whereIn('id', ingredientsToBeDeletedIds)
         .delete();
-
-      return response.json(ok)
 
       // Besides, insert the new ingredients, i.e. those that are not currently present in the 'ingredients' table. To do so, first index the ingredients to be skipped, i.e. those that are the existing ingredients:
       let ingredientsToBeSkipped = await knex('ingredients')
@@ -265,9 +260,18 @@ class DishesController {
   }
 
   async index(request: any, response: any) {
-    /* Method for indexing dishes and/or ingredients. It expects a text string and returns an array of dishes entries, which matches the expected text string by dish name or by ingredient. 
+    /* Method for indexing dishes and/or ingredients.
     
+    There are two distinct ways of indexing:
+
+    1) Index by text string. Client provides a text string and the method returns an array of dishes entries, which matches the expected text string by dish name or by ingredient. It tries to match by dish name, and if none found, then it tries to match by ingredient. Route to be accessed on real time when a client user is typing on a frontend input to search for dish entries.
+
+    2) Index by category id. If no text string is provided, then this method looks out for matches by category_id and returns an array of dish entries that belong to the given category. Route to be accessed automatically by frontend clients to group dishes by category.
+
+    Note that the two ways of indexing are mutually exclusive, if client provides a non-falsy text string AND a category id, the latter is ignored.
+   
     User must be authenticated to do so, for safety reasons.*/
+
     // Ensure user authentication
     if (!request.user) {
       throw new AppError('Usuário(a) deve estar autenticado(a) para indexar pratos!', 401);
@@ -276,22 +280,39 @@ class DishesController {
     // Retrieve text string from the body of the request
     const { text } = request.body;
 
-    // Search for dishes that matches the given text string
-    let dishes = await knex('dishes')
-      .whereLike('dish', `%${text}%`) as DishProps[];
+    let dishes;
+    // If text is not undefined, then try indexing dishes by text string
+    if (text) {
 
-    // If none is found, look out for ingredients that match the given string,
-    // then return all dishes ids that matches the given ingredient, if any
-    if (dishes.length === 0) {
-      const dishesIds = await knex('ingredients')
-        .whereLike('ingredient', `%${text}%`)
-        .then(ingredients => ingredients.map(
-          ingredient => ingredient?.dish_id
-        )) as number[];
-      
-      if (dishesIds.length > 0) {
+      // Search for dishes that matches the given text string
+      dishes = await knex('dishes')
+        .whereLike('dish', `%${text}%`) as DishProps[];
+  
+      // If none is found, look out for ingredients that match the given string,
+      // then return all dishes ids that matches the given ingredient, if any
+      if (dishes.length === 0) {
+        const dishesIds = await knex('ingredients')
+          .whereLike('ingredient', `%${text}%`)
+          .then(ingredients => ingredients.map(
+            ingredient => ingredient?.dish_id
+          )) as number[];
+        
+        if (dishesIds.length > 0) {
+          dishes = await knex('dishes')
+            .whereIn('id', [dishesIds]) as DishProps[];
+        }
+      }
+
+    // If text is undefined, try indexing dishes by category id
+    } else {
+
+      // Retrieve category id from the body of request, if any
+      const { category_id } = request.body;
+
+      if (category_id) {
+        // Search for dishes that matches the given category id
         dishes = await knex('dishes')
-          .whereIn('id', [dishesIds]) as DishProps[];
+          .where({ category_id }) as DishProps[];
       }
     }
 
@@ -322,7 +343,9 @@ class DishesController {
   async delete(request: any, response: any) {
     /* Method for deleting dish entry of a given id from the 'dishes' table.
     
-    User must be an authenticated admin for safety reasons.*/
+    User must be an authenticated admin for safety reasons.
+    
+    After dish is deleted, its image is also removed from the server.*/
    
     // Ensure user authentication
     if (!request.user) {
@@ -342,11 +365,24 @@ class DishesController {
     // Retrieve id from route params
     const { id } = request.params;
 
-    console.log({ id })
+    // Retrieve image name from dish entry to be deleted
+    const image = await knex('dishes')
+      .where({ id })
+      .first()
+      .then(dish => dish.image) as string;
 
+    // Delete dish entry
     await knex('dishes')
       .where({ id })
       .delete();
+
+    // Since everything went well, we can safely delete the uploaded image
+    if (image) {
+      const diskStorage = new DiskStorage();
+  
+      await diskStorage.deleteFile(image);
+  
+    }
 
     return response.json();
 
