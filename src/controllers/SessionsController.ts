@@ -39,7 +39,17 @@ class SessionsController {
       expiresIn
     });
 
-    return response.json({ validUser, token });
+    return response.json({
+      user: {
+        id: validUser.id,
+        admin: validUser.admin,
+        name: validUser.name,
+        email: validUser.email,
+        created_at: validUser.created_at,
+        updated_at: validUser.updated_at,
+      },
+      token
+    });
   }
 }
 

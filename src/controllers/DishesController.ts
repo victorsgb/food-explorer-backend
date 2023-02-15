@@ -91,11 +91,11 @@ class DishesController {
     }
 
     // Ensure ingredients contain an array of strings
-    const ingredients_pars = JSON.parse(ingredients);
+    const ingredientsItems = ingredients.split(',');
 
     const helpers = new Helpers();
 
-    if (!helpers.checkArrayOfStrings(ingredients_pars)) {
+    if (!helpers.checkArrayOfStrings(ingredientsItems)) {
       throw new AppError('Algum ingrediente inválido encontrado! Abortando processo.', 401);
     }
 
@@ -114,7 +114,7 @@ class DishesController {
     });
 
     // And also insert each ingredient as a new entry in the 'ingredients' table:
-    for (let ingredient of ingredients_pars) {
+    for (let ingredient of ingredientsItems) {
       await knex('ingredients')
         .insert({
           dish_id,
@@ -189,13 +189,14 @@ class DishesController {
     } = request.query;
 
     // Ensure ingredients contain an array of strings, if one is provided
-    const ingredients_pars = !ingredients
+    // Ensure ingredients contain an array of strings
+    const ingredientsItems = !ingredients
       ? undefined
-      : JSON.parse(ingredients);
+      : ingredients.split(',');
 
     const helpers = new Helpers();
 
-    if (ingredients_pars && !helpers.checkArrayOfStrings(ingredients_pars)) {
+    if (ingredientsItems && !helpers.checkArrayOfStrings(ingredientsItems)) {
       throw new AppError('Algum ingrediente inválido encontrado! Abortando processo.', 401);
     }
 
@@ -219,12 +220,12 @@ class DishesController {
     });
 
     // And also update this dish's ingredients:
-    if (ingredients_pars) {
+    if (ingredientsItems) {
 
       // Check if there are ingredients to be deleted, i.e. those that are not present in the new ingredients array:
       let ingredientsToBeDeletedIds = await knex('ingredients')
         .where({ dish_id: id })
-        .then(items => items.filter(item => !ingredients_pars.includes(item.ingredient)).map(item => item.id)) as number[];
+        .then(items => items.filter(item => !ingredientsItems.includes(item.ingredient)).map(item => item.id)) as number[];
 
       await knex('ingredients')
         .whereIn('id', ingredientsToBeDeletedIds)
@@ -233,9 +234,9 @@ class DishesController {
       // Besides, insert the new ingredients, i.e. those that are not currently present in the 'ingredients' table. To do so, first index the ingredients to be skipped, i.e. those that are the existing ingredients:
       let ingredientsToBeSkipped = await knex('ingredients')
         .where({ dish_id : id })
-        .then(items => items.filter(item => ingredients_pars.includes(item.ingredient)).map(item => item.ingredient)) as string[];
+        .then(items => items.filter(item => ingredientsItems.includes(item.ingredient)).map(item => item.ingredient)) as string[];
 
-      for (let ingredient of ingredients_pars) {
+      for (let ingredient of ingredientsItems) {
         if (!ingredientsToBeSkipped.includes(ingredient)) {
           await knex('ingredients')
             .insert({
@@ -270,7 +271,12 @@ class DishesController {
 
     Note that the two ways of indexing are mutually exclusive, if client provides a non-falsy text string AND a category id, the latter is ignored.
    
+    Also note that the start number, provided by the client, is mandatory, and it provides the offset number from which data will start being indexed.
+
     User must be authenticated to do so, for safety reasons.*/
+
+    // Max amount of indexed entries per call
+    const max_entries = 20;
 
     // Ensure user authentication
     if (!request.user) {
@@ -278,7 +284,7 @@ class DishesController {
     }
 
     // Retrieve text string from the body of the request
-    const { text } = request.body;
+    const { text, start } = request.body;
 
     let dishes;
     // If text is not undefined, then try indexing dishes by text string
@@ -286,6 +292,8 @@ class DishesController {
 
       // Search for dishes that matches the given text string
       dishes = await knex('dishes')
+        .limit(max_entries)
+        .offset(start)
         .whereLike('dish', `%${text}%`) as DishProps[];
   
       // If none is found, look out for ingredients that match the given string,
@@ -299,6 +307,8 @@ class DishesController {
         
         if (dishesIds.length > 0) {
           dishes = await knex('dishes')
+            .limit(max_entries)
+            .offset(start)
             .whereIn('id', [dishesIds]) as DishProps[];
         }
       }
@@ -307,11 +317,13 @@ class DishesController {
     } else {
 
       // Retrieve category id from the body of request, if any
-      const { category_id } = request.body;
+      const { category_id, start } = request.body;
 
       if (category_id) {
         // Search for dishes that matches the given category id
         dishes = await knex('dishes')
+          .limit(max_entries)
+          .offset(start)
           .where({ category_id }) as DishProps[];
       }
     }
