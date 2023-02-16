@@ -263,20 +263,9 @@ class DishesController {
   async index(request: any, response: any) {
     /* Method for indexing dishes and/or ingredients.
     
-    There are two distinct ways of indexing:
-
-    1) Index by text string. Client provides a text string and the method returns an array of dishes entries, which matches the expected text string by dish name or by ingredient. It tries to match by dish name, and if none found, then it tries to match by ingredient. Route to be accessed on real time when a client user is typing on a frontend input to search for dish entries.
-
-    2) Index by category id. If no text string is provided, then this method looks out for matches by category_id and returns an array of dish entries that belong to the given category. Route to be accessed automatically by frontend clients to group dishes by category.
-
-    Note that the two ways of indexing are mutually exclusive, if client provides a non-falsy text string AND a category id, the latter is ignored.
+    The client can index entries by text string, and this method returns an array of dishes entries, which matches the expected text string by dish name or by ingredient. It tries to match by dish name, and if none found, then it tries to match by ingredient. If no ingredient is provided, then it fetches everything. Route to be accessed on real time when a client user is typing on a frontend input to search for dish entries.
    
-    Also note that the start number, provided by the client, is mandatory, and it provides the offset number from which data will start being indexed.
-
     User must be authenticated to do so, for safety reasons.*/
-
-    // Max amount of indexed entries per call
-    const max_entries = 20;
 
     // Ensure user authentication
     if (!request.user) {
@@ -284,16 +273,14 @@ class DishesController {
     }
 
     // Retrieve text string from the body of the request
-    const { text, start } = request.body;
+    const { text } = request.body;
 
     let dishes;
-    // If text is not undefined, then try indexing dishes by text string
+    // If text is defined, then try indexing dishes by text string
     if (text) {
 
       // Search for dishes that matches the given text string
       dishes = await knex('dishes')
-        .limit(max_entries)
-        .offset(start)
         .whereLike('dish', `%${text}%`) as DishProps[];
   
       // If none is found, look out for ingredients that match the given string,
@@ -307,25 +294,14 @@ class DishesController {
         
         if (dishesIds.length > 0) {
           dishes = await knex('dishes')
-            .limit(max_entries)
-            .offset(start)
             .whereIn('id', [dishesIds]) as DishProps[];
         }
       }
 
-    // If text is undefined, try indexing dishes by category id
+    // If text is undefined, then index everything
     } else {
 
-      // Retrieve category id from the body of request, if any
-      const { category_id, start } = request.body;
-
-      if (category_id) {
-        // Search for dishes that matches the given category id
-        dishes = await knex('dishes')
-          .limit(max_entries)
-          .offset(start)
-          .where({ category_id }) as DishProps[];
-      }
+      dishes = await knex('dishes') as DishProps[];
     }
 
     return response.json(dishes);  
