@@ -7,7 +7,6 @@ import routes from '../src/routes';
 import AppError from '../src/utils/AppError';
 import { UPLOADS_FOLDER } from './configs/upload';
 
-
 const app = express();
 app.use(cors());
 app.use(express.json());

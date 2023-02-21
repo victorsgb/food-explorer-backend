@@ -110,7 +110,7 @@ class DishesController {
         description,
         image,
         reais,
-        cents
+        cents: cents.padEnd(2, '0')
     });
 
     // And also insert each ingredient as a new entry in the 'ingredients' table:
@@ -215,7 +215,7 @@ class DishesController {
         description,
         image,
         reais,
-        cents,
+        cents: cents.padEnd(2, '0'),
         updated_at: knex.fn.now()
     });
 
@@ -242,7 +242,7 @@ class DishesController {
             .insert({
               dish_id: id,
               ingredient
-            });
+          });
         }
       }
     }
