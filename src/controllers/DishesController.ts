@@ -273,7 +273,7 @@ class DishesController {
     }
 
     // Retrieve text string from the body of the request
-    const { text } = request.body;
+    const { text } = request.query;
 
     let dishes;
     // If text is defined, then try indexing dishes by text string
