@@ -1,6 +1,65 @@
 # FoodExplorer Backend
 
-## Estrutura do projeto
+This document is written first in English and then in Portuguese.
+
+## English version
+
+### Project structure
+
+The `src` folder contains the `index.ts` file, whose function is to start the server on the specified port.
+
+`configs` contains the authentication settings via JWT Token, in addition to the upload settings;
+
+`utils` contains files with functions that will potentially be accessed from many parts of the application to avoid code repetition;
+
+`middlewares` contains the ensureAuthenticated hook, which serves to ensure that the client is authenticated before specific routes are accessed;
+
+`providers` contains a file referencing a class for storing and deleting files in the `tmp/uploads` folder, intended for storing dish images;
+
+`routes` contains the application's routes, which have the duty of instantiating and calling the appropriate controllers depending on the accessed route;
+
+`controllers` contains the controllers used to interact with the database, depending on the route accessed by the client. The controllers created in this project are:
+> `Users` - has three methods related to creating, updating, and displaying some user data respectively;
+> `Sessions` - has the function of creating a session for the client, verifying if it has credentials to access the application routes that are not public;
+> `Categories` - has two methods: one for automatically creating category entries listed in a given csv file and another for indexing all existing categories;
+> `Ingredients` - has only one method to index all the ingredients of a given dish, taking its id as a search parameter;
+> `Dishes` - has methods for creating, updating, indexing, and deleting dishes, as well as for viewing the information of a given dish taking its id as a parameter;
+
+`database` contains two subfolders, in addition to the database file itself, in SQLite:
+> `files` contains just one csv file for the automatic creation of all categories listed by the client when accessing a specific route for this purpose;
+> `knex` contains the migrations files for creating database tables indirectly.
+
+Below is the structure of the existing tables:
+>> `users`, with the following fields: **id**, of type *number*, **admin**, of type *boolean*, **name**, of type *string*, **email**, of type *string*, **password**, of type *string*, **created_at**, of type *string*, and **updated_at**, of type *string*. **admin** users are allowed to create, view, edit and delete dishes. When registering, the new user is inserted as non-admin - to change this status, it is necessary to brute-force the database.
+>> `categories`, with the following fields: **id**, of type *number*, **category**, of type *string*, **created_at**, of type *string* and **updated_at**, of type *string*.
+>> `dishes`, with the following fields: **id**, of type *number*, **category_id**, of type *number*, which is a foreign key referencing entries in table `categories`, **dish**, of type *string*, **description**, of type *string*, **image**, of type *string*, **reals** and **cents**, of type *number*, **created_at**, of type *string* and **updated_at**, of type *string*.
+>> `ingredients`, with the following fields: **id**, of type *number*, **dish_id**, of type *number*, which is a foreign key referencing entries in table `dishes`, **ingredient**, of type *string*, **created_at**, of type *string*, and **updated_at**, of type *string*.
+
+### How to run this project locally
+
+You must follow these simple steps. First, go to the directory you are interested in and clone this repository:
+
+> `git clone https://github.com/victorsgb/food-explorer-backend`
+
+Then, go to the newly created folder containing your new local repository:
+
+> `cd food-explorer-backend`
+
+Install the project's dependencies (assuming you have the `npm` package installed on your machine):
+
+> `npm install`
+
+And ready! You can now run the project in a developer environment. The server will start on port 3334 after you run the following command:
+
+> `npm run dev`
+
+And that's it! The server is expected to run normally on the specified port, ready to receive requests from the web client, namely the [FoodExplorer Frontend](https://github.com/victorsgb/food-explorer-frontend).
+
+---
+
+## Versão em português
+
+### Estrutura do projeto
 
 A pasta `src` contém o arquivo `index.ts`, cuja função é inicializar o servidor na porta especificada.
 
@@ -27,6 +86,26 @@ A pasta `src` contém o arquivo `index.ts`, cuja função é inicializar o servi
 
 Segue abaixo a estrutura das tables existentes:
 >> `users`, com os seguintes campos: **id**, do tipo *number*, **admin**, do tipo *boolean*, **name**, do tipo *string*, **email**, do tipo *string*, **password**, do tipo *string*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*. Usuários **admin** têm permissão para criar, visualizar, editar e deletar pratos. Ao se cadastrar, o novo usuário é inserido como não admin - para mudar tal status, é necessário fazer a modificação via brute-force no banco de dados.
->> `categories`, com os seguintes campos: **id**, do tipo *number*, **category**, do tipo *string*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*. 
->> `dishes`, com os seguintes campos: **id**, do tipo *number*, **category_id**, do tipo *number*, que é uma chave estrangeira referenciando entradas na table `categories`, **dish**, do tipo *string*, **description**, do tipo *string*, **image**, do tipo *string*, **reais** e **cents**, do tipo *number*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*. 
+>> `categories`, com os seguintes campos: **id**, do tipo *number*, **category**, do tipo *string*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*.
+>> `dishes`, com os seguintes campos: **id**, do tipo *number*, **category_id**, do tipo *number*, que é uma chave estrangeira referenciando entradas na table `categories`, **dish**, do tipo *string*, **description**, do tipo *string*, **image**, do tipo *string*, **reais** e **cents**, do tipo *number*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*.
 >> `ingredients`, com os seguintes campos: **id**, do tipo *number*, **dish_id**, do tipo *number*, que é uma chave estrangeira referenciando entradas na table `dishes`, **ingredient**, do tipo *string*, **created_at**, do tipo *string* e **updated_at**, do tipo *string*.
+
+### Como rodar este projeto localmente
+
+Você deve seguir estes passos simples. Primeiro, vá ao diretório de seu interesse e clone este repositório:
+
+> `git clone https://github.com/victorsgb/food-explorer-backend`
+
+Então, vá para a pasta recém-criada contendo o seu novo repositório local:
+
+> `cd food-explorer-backend`
+
+Instale as dependências do projeto (assumindo que você tenha o pacote `npm` instalado na sua máquina):
+
+> `npm install`
+
+E pronto! Você já pode rodar o projeto em ambiente de desenvolvedor. O servidor será inicializado na porta 3334, após você rodar o seguinte comando:
+
+> `npm run dev`
+
+E é isso! Espera-se que o servidor esteja rodando normalmente, na porta especificada, pronto para receber solicitações do cliente web, a saber, o [FoodExplorer Frontend](https://github.com/victorsgb/food-explorer-frontend).
