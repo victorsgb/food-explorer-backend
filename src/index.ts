@@ -1,8 +1,8 @@
 // Core dependencies
 require('express-async-errors');
 require('dotenv/config');
-import cors from 'cors';
-import express from 'express';
+import cors = require('cors');
+import express = require('express');
 import routes from '../src/routes';
 import AppError from '../src/utils/AppError';
 import { UPLOADS_FOLDER } from './configs/upload';

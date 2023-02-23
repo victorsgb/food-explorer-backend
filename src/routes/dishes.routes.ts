@@ -1,6 +1,6 @@
 // Core dependencies
 import { Router } from 'express';
-import multer from 'multer';
+import multer = require('multer');
 
 // Custom controllers and configs
 import DishesController from '../controllers/DishesController';

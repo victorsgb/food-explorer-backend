@@ -4,7 +4,8 @@
   "description": "",
   "main": "knexfile.ts",
   "scripts": {
-    "dev": "npx nodemon src",
+    "start": "pm2-runtime start ecosystem.config.js --env production",
+    "dev": "npx nodemon src/index.ts",
     "migrate": "knex migrate:latest"
   },
   "repository": {

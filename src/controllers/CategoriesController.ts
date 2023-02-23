@@ -1,7 +1,7 @@
 // Core dependencies
 import knex from '../database/knex';
-import fs from 'fs';
-import path from 'path';
+import fs = require('fs');
+import path = require('path');
 import { parse } from 'csv-parse';
 
 // Custom utils

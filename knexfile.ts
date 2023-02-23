@@ -1,4 +1,4 @@
-import path from 'path';
+import path = require('path');
 
 const config = {
   development: {

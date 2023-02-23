@@ -1,6 +1,6 @@
 // Core dependencies
-import fs from 'fs';
-import path from 'path';
+import fs = require('fs');
+import path = require('path');
 import { TMP_FOLDER, UPLOADS_FOLDER } from '../configs/upload';
 
 class DiskStorage {
