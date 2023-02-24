@@ -4,6 +4,10 @@ This document is written first in English and then in Portuguese.
 
 ## English version
 
+### Deploy the project
+
+This project was deployed with [Render](https://render.com/), and you can access it at this [link](https://food-explorer-backend.onrender.com), although everything that you see is an HTTP request error. It is more interesting that you make server requests running at `https://food-explorer-backend.onrender.com` through applications such as [Insomnia](https://insomnia.rest/download) or directly from your favorite browser.
+
 ### Project structure
 
 The `src` folder contains the `index.ts` file, whose function is to start the server on the specified port.
@@ -37,7 +41,7 @@ Below is the structure of the existing tables:
 
 ### How to run this project locally
 
-You must follow these simple steps. First, go to the directory you are interested in and clone this repository:
+Assuming you have both `git` and `npm` installed on your machine, you must follow these simple steps. First, go to the directory you are interested in and clone this repository:
 
 > `git clone https://github.com/victorsgb/food-explorer-backend`
 
@@ -49,15 +53,23 @@ Install the project's dependencies (assuming you have the `npm` package installe
 
 > `npm install`
 
-And ready! You can now run the project in a developer environment. The server will start on port 3334 after you run the following command:
+And that's it! You can now run the project in a developer environment. The server will start on port 3334 after you run the following command:
 
 > `npm run dev`
 
-And that's it! The server is expected to run normally on the specified port, ready to receive requests from the web client, namely the [FoodExplorer Frontend](https://github.com/victorsgb/food-explorer-frontend).
+In case you want to run the project in a production environment, you simply type the following:
+
+> `npm run start`
+
+The server is expected to run normally on the specified port, ready to receive requests from the web client, namely the [FoodExplorer Frontend](https://github.com/victorsgb/food-explorer-frontend).
 
 ---
 
 ## Versão em português
+
+### Deploy do projeto
+
+O deploy deste projeto foi realizado com a [Render](https://render.com/) e você pode acessá-lo neste [link](https://food-explorer-backend.onrender.com), embora tudo o que veja seja um erro de requisição HTTP. É mais interessante que você faça pedidos de requisição ao servidor rodando em `https://food-explorer-backend.onrender.com` por meio de aplicações tal qual o [Insomnia](https://insomnia.rest/download), ou diretamente pelo seu navegador favorito.
 
 ### Estrutura do projeto
 
@@ -92,7 +104,7 @@ Segue abaixo a estrutura das tables existentes:
 
 ### Como rodar este projeto localmente
 
-Você deve seguir estes passos simples. Primeiro, vá ao diretório de seu interesse e clone este repositório:
+Supondo que você já tenha `git` e `npm` instalados na sua máquina, você deve seguir estes passos simples. Primeiro, vá ao diretório de seu interesse e clone este repositório:
 
 > `git clone https://github.com/victorsgb/food-explorer-backend`
 
@@ -107,5 +119,9 @@ Instale as dependências do projeto (assumindo que você tenha o pacote `npm` in
 E pronto! Você já pode rodar o projeto em ambiente de desenvolvedor. O servidor será inicializado na porta 3334, após você rodar o seguinte comando:
 
 > `npm run dev`
+
+Caso queira rodar o projeto em ambiente de produção, basta digitar o comando a seguir:
+
+> `npm run start`
 
 E é isso! Espera-se que o servidor esteja rodando normalmente, na porta especificada, pronto para receber solicitações do cliente web, a saber, o [FoodExplorer Frontend](https://github.com/victorsgb/food-explorer-frontend).
