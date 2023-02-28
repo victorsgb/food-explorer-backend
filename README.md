@@ -21,7 +21,7 @@ The project consists of several REST endpoints to be accessed by the front-end a
 
 This project contains the following dependencies:
 
-- **[`bcryptjs`](https://www.npmjs.com/package/bcryptjs), [version compatible](https://stackoverflow.com/questions/22343224/whats-the-difference-between -tilde-and-caret-in-package-json) *2.4.3***: used to encrypt passwords before registering them in the database;
+- **[`bcryptjs`](https://www.npmjs.com/package/bcryptjs), [compatible with version](https://stackoverflow.com/questions/22343224/whats-the-difference-between-tilde-and-caret-in-package-json) *2.4.3***: used to encrypt passwords before registering them in the database;
 - **[`cors`](https://www.npmjs.com/package/cors), compatible with version *2.8.5***: used to provide middleware that allows the front-end application to connect to this server;
 - **[`csv-parse`](https://www.npmjs.com/package/csv-parse), compatible with version *5.3.4***: used to read csv files for iterative creation of category entries in the relational database;
 - **[`express`](https://www.npmjs.com/package/express), compatible with version *4.18.2***: Web framework for Node.js;
